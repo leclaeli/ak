@@ -326,9 +326,24 @@ function themeslug_query_vars( $qvars ) {
     $qvars[] = 'ed'; // end date
     $qvars[] = 'org'; // organization
     $qvars[] = 'addy'; // user's address
+    $qvars[] = 'sr'; // sort results
     return $qvars;
 }
 add_filter( 'query_vars', 'themeslug_query_vars' , 10, 1 );
+
+// update empty prog_date_start fields
+function update_empty_prog_date_start() {
+    $today = date( 'Ymd' );
+    $args = array( 'post_type' => 'cpt_program');
+    $myposts = get_posts( $args );
+    foreach ( $myposts as $post ) : setup_postdata( $post );
+        if ( !get_field( 'prog_date_start' ) ) {
+            update_field( 'field_553fd33b74777', $today, $post->ID );
+        }
+    endforeach;
+    wp_reset_postdata();
+}
+add_action( 'init', 'update_empty_prog_date_start' );
 
 /* Change default excerpt length */
 

@@ -2,18 +2,35 @@
 /*
 * Template Name: Search Query
 */
+get_header();
 ?>
-<?php get_header(); ?>
-<?php $interests = get_query_var( 'ai' ); // associated_interests  ?>
-<?php $daysofweek = get_query_var( 'dow' ); // day of week ?>
 
-<?php //$max_age = get_query_var( 'age' ); // day of week ?>
 <?php
+    $interests = get_query_var( 'ai' ); // associated_interests
+    $daysofweek = get_query_var( 'dow' ); // day of week
     $start_date = get_query_var( 'sd' ); // start date 
     $end_date = get_query_var( 'ed' ); // end date 
     $prog_orgs = get_query_var( 'org' ); // end date
     $age = get_query_var( 'age' ); 
-    $user_address = get_query_var( 'addy' );
+    $user_address = ( get_query_var( 'addy' ) != 0 ? get_query_var( 'addy' ) : "Milwaukee, WI" );
+    $sr = get_query_var( 'sr' ); // sort results
+    switch ($sr) {
+        case "title_za" :
+            $order = 'DESC';
+            $order_by = 'title';
+            break;
+        case "title_az" :
+            $order = 'ASC';
+            $order_by = 'title';
+            break;
+        case "date" :
+            $order = 'ASC';
+            $order_by = 'prog_date_start';
+            break;
+        default :
+            $order = 'ASC' ;
+            $order_by = array( 'prog_date_start' => 'ASC');
+    }
 ?>
 
 <?php 
@@ -23,12 +40,16 @@
     // if (empty($age)) {
     //     $max_age = 19;
     // }
-    if (empty($start_date)) {
-        $start_date = 20000101;
-    }
-    if (empty($end_date)) {
-        $end_date = 20991231;
-    }
+    // if (empty($start_date)) {
+    //     $start_date = 0;
+    // }
+    // if (empty($end_date)) {
+    //     $end_date = 0;
+    // }
+    $start_date = date('Ymd');
+    $end_date = 20991231;
+
+
 ?>
 
 <?php 
@@ -50,31 +71,45 @@
         
         'posts_per_page' => -1,
         'post_type' => 'cpt_program',
-        'orderby' => 'title',
+        'orderby' => $order_by,
+        'order' => $order,
+        //'meta_key' => 'prog_ongoing',
         'meta_query' => array(
             array (
-                'relation' => 'OR',
-                array (
-                    'key' => 'prog_ongoing',
-                    'value' => true,
-                    'compare' => '=',
-                ),
-                array (
-                    'relation' => 'AND',
+                    'relation' => 'OR',
                     array (
-                        'key' => 'prog_date_start',
-                        'value' => $start_date,
-                        'compare' => '>=',
+                        'key' => 'prog_ongoing',
+                        'value' => true,
+                        'compare' => '=',
                     ),
                     array (
-                        'key' => 'prog_date_end',
-                        'value' => $end_date,
-                        'compare' => '<=',
-                    ),
+                        'relation' => 'AND',
+                        array (
+                            'key' => 'prog_date_start',
+                            'value' => $start_date,
+                            'compare' => '>=',
+                        ),
+                        array (
+                            'key' => 'prog_date_end',
+                            'value' => $end_date,
+                            'compare' => '<=',
+                        ),
+                    )
                 )
-            ),
-            
-           
+            )
+            // array (
+            //     'relation' => 'AND',
+            //     array (
+            //         'key' => 'prog_date_start',
+            //         'value' => $start_date,
+            //         'compare' => '>=',
+            //     ),
+            //     array (
+            //         'key' => 'prog_date_end',
+            //         'value' => $end_date,
+            //         'compare' => '<=',
+            //     ),
+            // ))
             
             // array (
             //     'key' => 'prog_cost',
@@ -82,9 +117,35 @@
             //     'compare' => '<=',
             //     'type' => 'NUMERIC'
             // ),
-        ),
+        
 
     );
+
+    // if ( !empty( $start_date ) ) {
+    //     array_push( $args['meta_query'], array (
+    //         array (
+    //             'relation' => 'OR',
+    //             array (
+    //                 'key' => 'prog_ongoing',
+    //                 'value' => true,
+    //                 'compare' => '=',
+    //             ),
+    //             array (
+    //                 'relation' => 'AND',
+    //                 array (
+    //                     'key' => 'prog_date_start',
+    //                     'value' => $start_date,
+    //                     'compare' => '>=',
+    //                 ),
+    //                 array (
+    //                     'key' => 'prog_date_end',
+    //                     'value' => $end_date,
+    //                     'compare' => '<=',
+    //                 ),
+    //             )
+    //         )
+    //     ));
+    // }
 
     if (!empty( $age )) {
         array_push($args['meta_query'],  array (
@@ -158,49 +219,79 @@
     }
 ?>
 
+<div>
+    <form action="search-results/" method="get">
+        <select name="sr" id="sort-results" onchange="this.form.submit()">
+            <option value="title_az">Sort by Title: A-Z</option>
+            <option value="title_za">Sort by Title: Z-A</option>
+            <option value="date">Sort by Date</option>
+        </select>
+    </form>
+</div>
+
 <?php
 $query = new WP_Query( $args );
+echo '<span>' . ($query->found_posts) . '</span>';
     // The Loop
     if ( $query->have_posts() ) {
         echo '<ul>';
-        $i = 0;
         $locations = array();
         $location_titles = array();
+         //echo '<pre>'; print_r($query->query_vars); echo '</pre>'; 
         while ( $query->have_posts() ) {
             $query->the_post();
+           if ( !get_field( 'prog_date_start' ) ) {
+        //echo "not empty";
+    }
             // ACF Fields
-            $prog_min_age = get_field( 'prog_age_min' );
-            $prog_max_age = get_field( 'prog_age_max' );
+            $age_min = get_field( 'prog_age_min' );
+            $age_max = get_field( 'prog_age_max' );
+            if ( get_field( 'prog_date_start' ) ) {
+                $date_start_obj = DateTime::createFromFormat( 'Ymd', get_field( 'prog_date_start' ) );
+                $date_start = $date_start_obj->format('m/d/y');
+            } else {
+                //$date_start = "Contact organization";
+                //$date_start = get_field( 'prog_ongoing' );
+                $date_start = get_field( 'prog_date_start' );
+                // var_dump($date_start);
+            }
+            if ( get_field( 'prog_date_end' ) ) {
+                $date_end_obj = DateTime::createFromFormat( 'Ymd', get_field( 'prog_date_end' ) );
+                $date_end = '&#150;' . $date_end_obj->format('m/d/y');
+            } else {
+                $date_end = "";
+            }
+            $cost = get_field( 'prog_cost' );
+            $days_offered = get_field( 'prog_days_offered' );
+            $experience = ( get_field( 'prog_activity_level' ) ? implode( ", ", get_field( 'prog_activity_level' ) ) : "All" );
+            $organization = get_field( 'prog_organization' );
+            $ongoing = get_field( 'prog_ongoing' );
+            //$prog_cats = get_field( 'prog_categories' );
+
 
             $loc = new Location();
             array_push($locations, $loc->my_location);
             ?>
+
             <li id="<?php the_id(); ?>" class="program-list <?php echo $loc->has_loc; ?> " >
                 <h2><a href="<?php the_permalink(); ?>"><?php the_title(); ?></a></h2>
                 <?php the_excerpt(); ?>
                 <div class="programs-meta-fields">
                     <ul>
-                        <li>Age: <?php echo $min_age . '&#150;' . $max_age; ?></li>
-                        <li>Date: </li>
-                        <li>Cost: </li>
+                        <li>Age: <?php echo $age_min . '&#150;' . $age_max; ?></li>
+                        <li>Date: <?php echo $date_start . $date_end . $ongoing; ?> </li>
+                        <li>Cost: <?php echo '$' . $cost; ?></li>
                     </ul>
                     <ul>
-                        <li>Distance: </li>
-                        <li>Time: </li>
-                        <li>Experience: </li>
+                        <li class="distance <?php echo $loc->has_loc; ?>">Distance: Contact organization for location.</li>
+                        <li>Days: <?php echo implode( ", ", $days_offered ); ?> </li>
+                        <li>Experience: <?php echo $experience; ?> </li>
                     </ul>
                 </div>
-                <div class="distance"></div>
-            </li>
-            
-            <?php
-          
-            
-            //echo '<li>' . the_field('prog_date_start') . '</li>';
-            //echo '<li>' . the_field('prog_ongoing') . '</li>';
-            $i++;
-        }
-         
+            </li>  
+
+        <?php
+        }  
         echo '</ul>';
     } else {
         // no posts found
@@ -451,7 +542,7 @@ function callback(response, status) {
                 + ': ' + results[j].distance.text + ' in '
                 + results[j].duration.text + '<br>';
             document.getElementsByClassName('pinned')[j].setAttribute("distance", results[j].duration.value );
-            document.getElementsByClassName('distance')[j].innerHTML = results[j].distance.text;
+            document.getElementsByClassName('pinned distance')[j].innerHTML = "Distance: " + results[j].distance.text;
             }
         }
     }

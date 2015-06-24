@@ -7,6 +7,7 @@
     $age = get_query_var( 'age' ); 
     $user_address = ( get_query_var( 'addy' ) != 0 ? get_query_var( 'addy' ) : "Milwaukee, WI" );
     $sr = get_query_var( 'sr' ); // sort results
+    $price = get_query_var( 'pr', 0 );
     switch ($sr) {
         case "title_za" :
             $order = 'DESC';

@@ -327,6 +327,7 @@ function themeslug_query_vars( $qvars ) {
     $qvars[] = 'org'; // organization
     $qvars[] = 'addy'; // user's address
     $qvars[] = 'sr'; // sort results
+    $qvars[] = 'pr'; // price
     return $qvars;
 }
 add_filter( 'query_vars', 'themeslug_query_vars' , 10, 1 );

@@ -133,7 +133,7 @@ if ( is_user_logged_in() ) {
             ?>
         </select>
         <label>Age:</label><input type="number" name="age" id="age" min="4" max="19" >
-        <p>Start date: <input type="text" id="datepicker" /></p>
+        <p>Start Date Before : <input type="text" id="datepicker" /></p>
         <label>Organizations:</label>
         <select multiple name="org[]" id="page_id" style="width: 300px;">
             <?php 

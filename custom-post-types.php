@@ -131,6 +131,7 @@ function create_my_post_types() {
             'label' => 'Programs',
             'taxonomies' => array('category'),
             'supports' => array( 'title', 'editor', 'thumbnail' ),
+            'has_archive' => true,
         )
     );
 }

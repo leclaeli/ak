@@ -332,18 +332,22 @@ function themeslug_query_vars( $qvars ) {
 add_filter( 'query_vars', 'themeslug_query_vars' , 10, 1 );
 
 // update empty prog_date_start fields
-function update_empty_prog_date_start() {
-    $today = date( 'Ymd' );
-    $args = array( 'post_type' => 'cpt_program');
-    $myposts = get_posts( $args );
-    foreach ( $myposts as $post ) : setup_postdata( $post );
-        if ( !get_field( 'prog_date_start' ) ) {
-            update_field( 'field_553fd33b74777', $today, $post->ID );
-        }
-    endforeach;
-    wp_reset_postdata();
-}
-add_action( 'init', 'update_empty_prog_date_start' );
+
+// function update_empty_prog_date_start() {
+//     $today = date( 'Ymd' );
+//     //var_dump($today);
+//     $args = array( 'post_type' => 'cpt_program');
+//     $myposts = get_posts( $args );
+//     foreach ( $myposts as $post ) : setup_postdata( $post );
+//         if ( get_field( 'prog_ongoing' ) ) {
+//             print_r('true');
+//             update_field( 'field_553fd33b74777', $today, $post->ID );
+//         }
+//         else { print_r('false'); }
+//     endforeach;
+//     wp_reset_postdata();
+// }
+// add_action( 'init', 'update_empty_prog_date_start' );
 
 /* Change default excerpt length */
 
@@ -351,9 +355,6 @@ function new_custom_excerpt_length( $length ) {
     return 20;
 }
 add_filter( 'excerpt_length', 'new_custom_excerpt_length', 999 );
-
-
-
 
 
 
@@ -457,54 +458,12 @@ add_action( 'admin_enqueue_scripts', 'acf_admin_enqueue' );
             $this->location_title = get_the_title();
             array_push($location_titles, $this->location_title);
         }
-
         
     }
 
-      
-        
-    
+function orderbyreplace($orderby) {
+    return str_replace('wp_posts.menu_order', 'mt1.meta_value', $orderby);
+}
+add_filter('posts_orderby','orderbyreplace');
 
-
-
-
-
-/* Add a categories to attachments */
-// function wptp_add_categories_to_attachments() {
-//     register_taxonomy_for_object_type( 'category', 'attachment' );
-// }
-// add_action( 'init' , 'wptp_add_categories_to_attachments' );
-
-/* Add a category filter to images */
-// function asap_add_image_category_filter() {
-//     $screen = get_current_screen();
-//     if ( 'upload' == $screen->id ) {
-//         $dropdown_options = array( 'show_option_all' => __( 'View all images categories', 'asap' ), 'hide_empty' => true, 'hierarchical' => true, 'orderby' => 'name', 'taxonomy' => 'image-categories' );
-//         wp_dropdown_categories( $dropdown_options );
-//     }
-// }
-// add_action( 'restrict_manage_posts', 'asap_add_image_category_filter' );
-
-// function my_add_attachment_location_field( $form_fields, $post ) {
-//     $field_value = get_post_meta( $post->ID, 'location', true );
-//     $form_fields['location'] = array(
-//         'value' => $field_value ? $field_value : '',
-//         'label' => __( 'Location' ),
-//         'helps' => __( 'Set a location for this attachment' )
-//     );
-//     unset($form_fields['media-categories']);
-//     return $form_fields;
-// }
-// add_filter( 'attachment_fields_to_edit', 'my_add_attachment_location_field', 10, 2 );
-
-// // $location = $_REQUEST['attachments'][$attachment_id]['location'];
-// // print_r($location);
-
-
-// function my_save_attachment_location( $attachment_id ) {
-//     if ( isset( $_REQUEST['attachments'][$attachment_id]['location'] ) ) {
-//         $location = $_REQUEST['attachments'][$attachment_id]['location'];
-//         update_post_meta( $attachment_id, 'location', $location );
-//     }
-// }
-// add_action( 'edit_attachment', 'my_save_attachment_location' );
+remove_filter('posts_orderby','orderbyreplace');

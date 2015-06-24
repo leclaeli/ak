@@ -56,10 +56,15 @@ input[type=submit] {
     height: 400px;
     border: #ccc solid 1px;
     margin: 20px 0;
+    left: 100%;
+}
+
+.program-name {
+    font-weight: bold;
 }
 
 /* Google Address Input */
-#/*locationField, #controls {
+/*locationField, #controls {
     position: relative;
     width: 480px;
 }
@@ -97,6 +102,26 @@ width: 200px;
 height: 20px;
 margin-bottom: 2px;
 }*/
+
+#container {
+    position: relative;
+    overflow: hidden;
+}
+
+.box {
+    position: relative;
+    top: 0px;
+}
+
+#programs-list {
+    left: 0%;
+}
+
+#programs-map {
+    left: 100%;
+    position: absolute;
+}
+
 
 @media (max-width: 999px) {
 }

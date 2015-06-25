@@ -135,7 +135,7 @@ if ( is_user_logged_in() ) {
 		</select>
 
 		<label>Age:</label><input type="number" name="age" id="age" min="4" max="19" >
-		<p>Start Date Before : <input type="text" id="datepicker" /></p>
+		<p>Start date is before (select a date): <input type="text" id="datepicker" /></p>
 		
 		<label>Organizations:</label>
 		<select multiple name="org[]" id="select-org" style="width: 300px;">
@@ -152,12 +152,31 @@ if ( is_user_logged_in() ) {
 		<label>Price:</label>
 		<select name="pr" id="select-price" style="width: 300px;">
 			<option></option>
-			<option value="25">Under $25</option>
-			<option value="50">$25 to $50</option>
-			<option value="100">$50 to $100</option>
-			<option value="200">$100 to $200</option>
-			<option value="201">Above $200</option>
+			<option value="25">$25 or Less</option>
+			<option value="50">$50 or Less</option>
+			<option value="100">$100 or Less</option>
+			<option value="200">$200 or Less</option>
+			<option value="">Any</option>
 		</select>
+
+		<label>Distance:</label>
+		<select name="di" id="select-distance" style="width: 300px;">
+			<option></option>
+			<option value="1609.34">Within 1 Mile</option>
+			<option value="3218.69">Within 2 Miles</option>
+			<option value="8046.72">Within 5 Miles</option>
+			<option value="16093.4">Within 10 Miles</option>
+			<option value="32186.9">Within 20 Miles</option>
+			<option value="">Any Distance</option>
+		</select>
+		
+		<label>Experience:</label>
+		<ul>
+			<li><label for="exp1"><input id="exp1" type="checkbox" value="Beginner" name="ex[]">Beginner</label></li>
+			<li><label for="exp2"><input id="exp2" type="checkbox" value="Intermediate" name="ex[]">Intermediate</label></li>
+			<li><label for="exp3"><input id="exp3" type="checkbox" value="Advanced" name="ex[]">Advanced</label></li>
+			<li><label for="exp4"><input id="exp4" type="checkbox" value="0" name="ex[]">Any or Not Applicable</label></li>
+		</ul>
 
 		<div id="locationField">
 			<input id="autocomplete" placeholder="Enter your address" onFocus="geolocate()" type="text" name="addy"></input>
@@ -171,22 +190,18 @@ if ( is_user_logged_in() ) {
 				<td class="wideField" colspan="2"><input class="field" id="route" disabled="true"></input></td>
 			</tr>
 			<tr>
-			<td class="label">City</td>
-			<td class="wideField" colspan="3"><input class="field" id="locality"
-				  disabled="true"></input></td>
+				<td class="label">City</td>
+				<td class="wideField" colspan="3"><input class="field" id="locality" disabled="true"></input></td>
+			</tr>
+				<tr>
+				<td class="label">State</td>
+				<td class="slimField"><input class="field" id="administrative_area_level_1" disabled="true"></input></td>
+				<td class="label">Zip code</td>
+				<td class="wideField"><input class="field" id="postal_code" disabled="true"></input></td>
 			</tr>
 			<tr>
-			<td class="label">State</td>
-			<td class="slimField"><input class="field"
-				  id="administrative_area_level_1" disabled="true"></input></td>
-			<td class="label">Zip code</td>
-			<td class="wideField"><input class="field" id="postal_code"
-				  disabled="true"></input></td>
-			</tr>
-			<tr>
-			<td class="label">Country</td>
-			<td class="wideField" colspan="3"><input class="field"
-				  id="country" disabled="true"></input></td>
+				<td class="label">Country</td>
+				<td class="wideField" colspan="3"><input class="field" id="country" disabled="true"></input></td>
 			</tr>
 		</table>
 		</div>
@@ -229,6 +244,5 @@ jQuery( document ).ready(function($) {
 
 <?php 
 get_sidebar();
-//echo '<a href="' . esc_url( add_query_arg( 'associated_interests', '85', 'http://elijah.uwm.edu/wordpress/search-query'  ) ) . '">LINK</a>';
 get_footer(); 
 ?>

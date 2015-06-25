@@ -1,13 +1,35 @@
 <?php
     $interests = get_query_var( 'ai' ); // associated_interests
     $daysofweek = get_query_var( 'dow' ); // day of week
-    //$start_date = get_query_var( 'sd' ); // start date 
+    $start_date = get_query_var( 'sd' ); // start date 
     //$end_date = get_query_var( 'ed' ); // end date 
     $prog_orgs = get_query_var( 'org' ); // end date
     $age = get_query_var( 'age' ); 
     $user_address = ( get_query_var( 'addy' ) != 0 ? get_query_var( 'addy' ) : "Milwaukee, WI" );
-    $sr = get_query_var( 'sr' ); // sort results
     $price = get_query_var( 'pr', 0 );
+    // switch ( $price ) {
+    //     case 25 : // $25 and under
+    //         $price_max = 25;
+    //         break;
+    //     case 50 : // $25 to $50
+    //         $price_max = 50;
+    //         break;
+    //     case 100 : // $50 to $100
+    //         $price_max = 100;
+    //         break;
+    //     case 200 : // $100 to $200 
+    //         $price_max = 200;
+    //         break;
+    //     case 201 : // $200 and above
+    //         $price_max = 99999999;
+    //         break;
+    //     default :
+    //         $price_min = 0;
+    //         $price_max = 0;
+    // }
+    $experience = get_query_var( 'ex' ); // experience/activity level
+    $distance = ( get_query_var( 'di', 9999999 ) != 0 ? get_query_var( 'di' ) : 9999999 ); // distance
+    $sr = get_query_var( 'sr' ); // sort results
     switch ($sr) {
         case "title_za" :
             $order = 'DESC';
@@ -186,4 +208,29 @@
         }
         array_push( $args['meta_query'], $orgs );
     }
+
+    if (!empty( $price )) {
+        array_push($args['meta_query'], array (
+            'key' => 'prog_cost',
+            'value' => $price,
+            'compare' => '<=',
+            'type' => 'NUMERIC'
+        ));
+    }
+
+    if ( !empty( $experience ) && !in_array( "0", $experience ) ) {
+        $i = 0;
+        $exp_levels['relation'] = 'OR';
+        foreach ( $experience as $exp_level ) {
+            $exp_levels[$i] = array(
+                'key' => 'prog_activity_level',
+                'value' => '"' . $exp_level . '"',
+                'compare' => 'LIKE'
+            );
+            $i++;
+        }
+        array_push( $args['meta_query'], $exp_levels );
+    }
+
+
 ?>

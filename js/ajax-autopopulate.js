@@ -8,7 +8,6 @@ jQuery(document).ready(function($) {
      */
     
     $( '#acf-prog_categories .selectit input' ).change(function () {
-
  
         var interests_categories = []; // Selected value
  

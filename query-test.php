@@ -13,22 +13,52 @@ $meta_key1 = 'prog_ongoing';
 $meta_key2 = 'prog_date_start';
 $start_date = date('Ymd');
 
+$sr = get_query_var( 'sr' ); // sort results
+
+if ( $sr ) {
+    echo "true";
+    $postids = $wpdb->get_col( $wpdb->prepare( 
+        "
+        SELECT      DISTINCT key1.post_id
+        FROM        $wpdb->postmeta key1
+        INNER JOIN  $wpdb->postmeta key2
+                    ON key2.post_id = key1.post_id
+                    AND key2.meta_key = %s
+        WHERE       key1.meta_key = %s
+                    AND key1.meta_value is TRUE
+                    OR key2.meta_value >= %d
+        ORDER BY    COALESCE(NULLIF(key1.meta_value, 0), 0) DESC, COALESCE(NULLIF(key2.meta_value, ''), $start_date) ASC, key2.meta_value ASC 
+        ",
+        $meta_key2,
+        $meta_key1,
+        $start_date
+    ) ); 
+} else {
+echo "false";
+// From bonger - wpse
 $postids = $wpdb->get_col( $wpdb->prepare( 
     "
-    SELECT      DISTINCT key1.post_id
-    FROM        $wpdb->postmeta key1
+    SELECT      p.ID, key1.meta_value as prog_ongoing, key2.meta_value as prog_date_start
+    FROM        $wpdb->posts p
+    INNER JOIN  $wpdb->postmeta key1
+                ON key1.post_id = p.ID
+                AND key1.meta_key = %s
     INNER JOIN  $wpdb->postmeta key2
-                ON key2.post_id = key1.post_id
+                ON key2.post_id = p.ID
                 AND key2.meta_key = %s
-    WHERE       key1.meta_key = %s
-                AND key1.meta_value is TRUE
-                OR key2.meta_value >= %d
-    ORDER BY    COALESCE(NULLIF(key1.meta_value, 0), 0) DESC, COALESCE(NULLIF(key2.meta_value, ''), $start_date) ASC, key2.meta_value ASC 
+    WHERE       key1.meta_value IS TRUE OR key2.meta_value >= %d
+    ORDER BY    CASE
+                    WHEN key2.meta_value >= %d THEN CONCAT('A', key2.meta_value)
+                    WHEN key1.meta_value AND key2.meta_value THEN CONCAT('B', key2.meta_value)
+                    WHEN key1.meta_value THEN 'C'
+                    ELSE 'D'
+                END ASC
     ",
-    $meta_key2,
     $meta_key1,
-    $start_date
-) ); 
+    $meta_key2,
+    $start_date, $start_date
+    ) );
+}
 
 /** UNION Doesn't work **/
 

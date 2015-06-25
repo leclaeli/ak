@@ -4,16 +4,20 @@ require_once('custom-post-types.php');
 require_once('admin-columns.php');
 
 function custom_js_script() {
-    wp_enqueue_script('custom-script', get_stylesheet_directory_uri() . '/js/test.js', array( 'jquery'), false, false);
-    //wp_enqueue_script('google-maps-api', 'https://maps.googleapis.com/maps/api/js?v=3.exp', array(), false, false);
+    if ( !is_page_template( 'update-child.php' ) ) {
+        wp_enqueue_script('google-maps-api', 'https://maps.googleapis.com/maps/api/js?v=3.exp&signed_in=true&libraries=places', array(), false, true);    
+    }
+    wp_enqueue_script('google-maps', get_stylesheet_directory_uri() . '/js/google-maps.js', array( 'jquery'), false, true);
+    wp_enqueue_script('custom-script', get_stylesheet_directory_uri() . '/js/test.js', array( 'jquery', 'google-maps'), false, false);
     wp_enqueue_script('marker-with-label', get_stylesheet_directory_uri() . '/js/markerwithlabel.js', array(), false, true);
     wp_enqueue_script('jquery-ui-datepicker');
-    wp_enqueue_style('plugin_name-admin-ui-css',
-        'https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.21/themes/smoothness/jquery-ui.css',
-        false,
-        false,
-        false
-    );
+    wp_enqueue_style('plugin_name-admin-ui-css', 'https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.21/themes/smoothness/jquery-ui.css', false, false, false );
+    wp_localize_script( 'custom-script', 'testing', array(
+        'ajax_url' => admin_url( 'admin-ajax.php' )
+    ) );
+    wp_localize_script( 'google-maps', 'gmap', array(
+        'distance' => ( get_query_var( 'di', 9999999 ) != 0 ? get_query_var( 'di' ) : 9999999 ) // distance
+    ) );
 }
 add_action('wp_enqueue_scripts', 'custom_js_script');
 
@@ -328,6 +332,8 @@ function themeslug_query_vars( $qvars ) {
     $qvars[] = 'addy'; // user's address
     $qvars[] = 'sr'; // sort results
     $qvars[] = 'pr'; // price
+    $qvars[] = 'ex'; // experience
+    $qvars[] = 'di'; // distance in miles
     return $qvars;
 }
 add_filter( 'query_vars', 'themeslug_query_vars' , 10, 1 );
@@ -400,6 +406,14 @@ function interests_by_category( $selected_category ) {
 add_action('wp_ajax_pi_add_interests', 'interests_by_category');
 add_action('wp_ajax_nopriv_pi_add_interests', 'interests_by_category');
 
+// AJAX Test Distance
+add_action( 'wp_ajax_nopriv_post_love_add_love', 'post_love_add_love' );
+add_action( 'wp_ajax_post_love_add_love', 'post_love_add_love' );
+function post_love_add_love() {
+    $ajax_var = $_POST['post_id'];
+    die();
+} 
+
 
 
 // ACF Dynamic Filter
@@ -442,14 +456,14 @@ add_action( 'admin_enqueue_scripts', 'acf_admin_enqueue' );
         }
         
         function check_prog_location() {
-            global $location_titles;
+            global $location_titles, $location_post_ids;
             if( get_field('prog_location') ) {
                 // create object and return it
                 $this->my_location = get_field('prog_location');
                 //$this->location_title = get_the_title();
                 
                 $this->has_loc = " pinned";
-                //array_push( $locations[$i], get_the_title() );
+                // array_push( $locations[$i], get_the_title() );
                 // var_dump($has_location);
             } else {
                 $this->has_loc = "";
@@ -457,14 +471,16 @@ add_action( 'admin_enqueue_scripts', 'acf_admin_enqueue' );
                 
             }
             $this->location_title = get_the_title();
+            $this->location_post_id = get_the_id();
             array_push($location_titles, $this->location_title);
+            array_push($location_post_ids, $this->location_post_id);
         }
         
     }
 
-function orderbyreplace($orderby) {
-    return str_replace('wp_posts.menu_order', 'mt1.meta_value', $orderby);
-}
-add_filter('posts_orderby','orderbyreplace');
+// function orderbyreplace($orderby) {
+//     return str_replace('wp_posts.menu_order', 'mt1.meta_value', $orderby);
+// }
+// add_filter('posts_orderby','orderbyreplace');
 
-remove_filter('posts_orderby','orderbyreplace');
+// remove_filter('posts_orderby','orderbyreplace');
